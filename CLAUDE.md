@@ -87,11 +87,12 @@ Käytä `@theme`-nimistä generoituja utilityjä tai `bg-[var(--color-x)]`.
 │   │   ├── markdown.ts             # Oma mini-Markdown → HTML (escape ensin!)
 │   │   └── image.ts                # Kuvan pienennys ennen localStoragea
 │   ├── components/
-│   │   ├── ui/                     # Button, Card, ProgressBar, FormField, Badge,
+│   │   ├── ui/                     # Button, Card, MagneticCard, FormField, Badge,
 │   │   │                           # MarkdownEditor, DrawingCanvas
+│   │   ├── VoteOptions.tsx          # Jaettu: vaihtoehdot + tulokset samassa
 │   │   └── Layout.tsx               # Header + container
 │   └── pages/
-│       ├── VoteListPage.tsx          # Näkymä 1: avoimet äänestykset
+│       ├── VoteListPage.tsx          # Näkymä 1: kortit, joilla voi äänestää suoraan
 │       ├── VoteDetailPage.tsx        # Näkymä 2: äänestys + tulokset
 │       ├── VoteCreatePage.tsx        # Näkymä 3: uuden luonti
 │       └── NotFoundPage.tsx
@@ -135,6 +136,16 @@ npm run lint      # oxlint
   Väri näkyy valintanapissa näytteenä ja tulospalkin värinä.
 - `useVotes` palauttaa `storageFull`-lipun jos localStorage-kiintiö täyttyy (kuvat!) —
   luontisivu näyttää siitä varoituksen.
+
+### Vuorovaikutus (AI-Koulu UI/UX -käytännöt)
+- **Valinnat ovat suoraan listakortilla** — äänestäminen ei vaadi navigointia.
+- **Tulokset paljastuvat heti valinnasta**: `VoteOptions` renderöi vaihtoehdon ja sen
+  tulospalkin samana elementtinä (täyttö = osuus, oikea reuna = prosentti). Suljetuissa
+  äänestyksissä tulokset näkyvät aina.
+- **`MagneticCard`** — kortti nojaa enintään 5px kohti kursoria ja saa kursoria seuraavan
+  hehkun. Efekti on rajattu `(pointer: fine)`-laitteisiin ja kytkeytyy pois
+  `prefers-reduced-motion`-tilassa; kosketuslaitteilla kortti ei liiku lainkaan.
+- Hover-nostot noudattavat AI-Koulun ohjetta: pieni `translateY` + pehmeä varjo, ~0.2s.
 
 ### Tunnettu rajoitus
 `useVotes` instantioidaan erikseen jokaisessa sivukomponentissa; jaettu totuus on

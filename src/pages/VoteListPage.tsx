@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom'
 import { useVotes } from '../lib/useVotes'
 import { getVoteStatus, totalVotes } from '../types'
-import { Card } from '../components/ui/Card'
+import { MagneticCard } from '../components/ui/MagneticCard'
 import { StatusBadge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
+import { VoteOptions } from '../components/VoteOptions'
 import { stripMarkdown } from '../lib/markdown'
 
 function formatDate(iso: string) {
@@ -17,7 +18,7 @@ function formatDate(iso: string) {
 }
 
 export function VoteListPage() {
-  const { votes } = useVotes()
+  const { votes, myVoteFor, castVote } = useVotes()
 
   if (votes.length === 0) {
     return (
@@ -38,50 +39,61 @@ export function VoteListPage() {
   })
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <h1 className="text-xl font-semibold mb-1">Äänestykset</h1>
+
       {sorted.map((vote) => {
         const status = getVoteStatus(vote)
-        return (
-          <Link key={vote.id} to={`/aanestys/${vote.id}`}>
-            <Card className="hover:bg-surface-hover transition-colors active:opacity-90">
-              <div className="flex items-start justify-between gap-3 mb-2">
-                <h2 className="font-semibold leading-snug break-words">{vote.title}</h2>
-                <StatusBadge status={status} />
-              </div>
-              <div className="flex gap-3 mb-3">
-                {vote.media && (
-                  <img
-                    src={vote.media.dataUrl}
-                    alt=""
-                    className="shrink-0 h-16 w-16 rounded-control border border-line object-cover"
-                  />
-                )}
-                <p className="text-sm text-muted line-clamp-2 break-words min-w-0">
-                  {stripMarkdown(vote.description)}
-                </p>
-              </div>
+        const open = status === 'open'
+        const myVote = myVoteFor(vote.id)
 
-              {vote.options.some((o) => o.color) && (
-                <div className="flex gap-1 mb-3" aria-hidden>
-                  {vote.options.map((o) => (
-                    <span
-                      key={o.id}
-                      className="h-2 flex-1 rounded-full border border-line"
-                      style={{ backgroundColor: o.color }}
-                    />
-                  ))}
-                </div>
+        return (
+          <MagneticCard key={vote.id}>
+            <div className="flex items-start justify-between gap-3 mb-2">
+              <Link
+                to={`/aanestys/${vote.id}`}
+                className="font-semibold leading-snug break-words hover:text-accent transition-colors
+                  min-h-11 flex items-center"
+              >
+                {vote.title}
+              </Link>
+              <StatusBadge status={status} />
+            </div>
+
+            <div className="flex gap-3 mb-3">
+              {vote.media && (
+                <img
+                  src={vote.media.dataUrl}
+                  alt=""
+                  className="shrink-0 h-14 w-14 rounded-control border border-line object-cover"
+                />
               )}
-              <div className="flex items-center justify-between text-xs text-muted">
-                <span>{totalVotes(vote)} ääntä yhteensä</span>
-                <span>
-                  {status === 'open' ? 'Sulkeutuu ' : 'Sulkeutui '}
-                  {formatDate(vote.closesAt)}
-                </span>
-              </div>
-            </Card>
-          </Link>
+              <p className="text-sm text-muted line-clamp-2 break-words min-w-0">
+                {stripMarkdown(vote.description)}
+              </p>
+            </div>
+
+            <VoteOptions
+              vote={vote}
+              myVote={myVote}
+              onVote={open ? (optionId) => castVote(vote.id, optionId) : undefined}
+            />
+
+            <div className="flex items-center justify-between gap-3 mt-2 text-xs text-muted">
+              <span className="min-w-0">
+                {totalVotes(vote)} ääntä ·{' '}
+                {open && !myVote
+                  ? 'valitse nähdäksesi tulokset'
+                  : `${open ? 'sulkeutuu' : 'sulkeutui'} ${formatDate(vote.closesAt)}`}
+              </span>
+              <Link
+                to={`/aanestys/${vote.id}`}
+                className="shrink-0 min-h-11 px-2 -mr-2 flex items-center hover:text-accent transition-colors"
+              >
+                Avaa →
+              </Link>
+            </div>
+          </MagneticCard>
         )
       })}
     </div>

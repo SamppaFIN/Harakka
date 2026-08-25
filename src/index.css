@@ -188,3 +188,42 @@ body::after {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
+
+/* Magneettinen kortti: kevyt nojaus kursoriin + kursoria seuraava hehku.
+   --mx/--my/--glow asetetaan MagneticCard-komponentista. */
+.magnetic-card {
+  --glow: 0;
+  transition:
+    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  will-change: transform;
+}
+
+.magnetic-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: var(--glow);
+  transition: opacity 0.25s ease;
+  background: radial-gradient(
+    18rem circle at var(--mx, 50%) var(--my, 50%),
+    oklch(0.76 0.155 350 / 0.13),
+    transparent 65%
+  );
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .magnetic-card:hover {
+    border-color: oklch(0.76 0.155 350 / 0.45);
+    box-shadow: 0 6px 24px oklch(0.1 0.05 300 / 0.45);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .magnetic-card {
+    transform: none !important;
+  }
+}

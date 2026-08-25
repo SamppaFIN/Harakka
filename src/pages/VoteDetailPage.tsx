@@ -4,7 +4,7 @@ import { getVoteStatus, totalVotes } from '../types'
 import { Card } from '../components/ui/Card'
 import { StatusBadge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
-import { ProgressBar } from '../components/ui/ProgressBar'
+import { VoteOptions } from '../components/VoteOptions'
 import { renderMarkdown } from '../lib/markdown'
 
 function formatDate(iso: string) {
@@ -37,7 +37,7 @@ export function VoteDetailPage() {
   const status = getVoteStatus(vote)
   const myVote = myVoteFor(vote.id)
   const total = totalVotes(vote)
-  const canVote = status === 'open'
+  const open = status === 'open'
 
   return (
     <div className="space-y-5">
@@ -62,101 +62,29 @@ export function VoteDetailPage() {
       </div>
 
       {vote.media && (
-        <img
-          src={vote.media.dataUrl}
-          alt={vote.media.alt}
-          className="w-full rounded-card border border-line"
-        />
+        <img src={vote.media.dataUrl} alt={vote.media.alt} className="w-full rounded-card border border-line" />
       )}
 
       <Card>
         <h2 className="text-sm font-semibold mb-3 text-muted uppercase tracking-wide">
-          {canVote ? 'Valitse vaihtoehto' : 'Lopulliset tulokset'}
+          {!open ? 'Lopulliset tulokset' : myVote ? 'Tulokset' : 'Valitse vaihtoehto'}
         </h2>
 
-        {canVote ? (
-          <div className="space-y-2.5" role="radiogroup" aria-label="Äänestysvaihtoehdot">
-            {vote.options.map((opt) => {
-              const selected = myVote === opt.id
-              return (
-                <button
-                  key={opt.id}
-                  role="radio"
-                  aria-checked={selected}
-                  onClick={() => castVote(vote.id, opt.id)}
-                  className={`w-full min-h-11 text-left px-4 py-3 rounded-control border transition-colors break-words
-                    ${
-                      selected
-                        ? 'border-accent bg-accent-soft font-medium'
-                        : 'border-line bg-surface/60 hover:bg-surface-hover'
-                    }`}
-                >
-                  <span className="flex items-center gap-2.5">
-                    <span
-                      className={`shrink-0 h-4.5 w-4.5 rounded-full border-2 flex items-center justify-center
-                        ${selected ? 'border-accent' : 'border-line'}`}
-                    >
-                      {selected && <span className="h-2 w-2 rounded-full bg-accent" />}
-                    </span>
-                    {opt.color && (
-                      <span
-                        aria-hidden
-                        className="shrink-0 h-7 w-7 rounded-md border border-line"
-                        style={{ backgroundColor: opt.color }}
-                      />
-                    )}
-                    {opt.text}
-                  </span>
-                </button>
-              )
-            })}
-            {myVote && (
-              <p className="text-xs text-muted pt-1">
-                Äänesi on tallennettu. Voit vaihtaa valintaasi milloin tahansa.
-              </p>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {vote.options
-              .slice()
-              .sort((a, b) => b.votes - a.votes)
-              .map((opt) => (
-                <ProgressBar
-                  key={opt.id}
-                  label={opt.text}
-                  votes={opt.votes}
-                  percent={total > 0 ? Math.round((opt.votes / total) * 100) : 0}
-                  highlighted={myVote === opt.id}
-                  color={opt.color}
-                />
-              ))}
-          </div>
+        <VoteOptions
+          vote={vote}
+          myVote={myVote}
+          onVote={open ? (optionId) => castVote(vote.id, optionId) : undefined}
+        />
+
+        {open && myVote && (
+          <p className="text-xs text-muted pt-3">
+            Äänesi on tallennettu. Voit vaihtaa valintaasi milloin tahansa.
+          </p>
         )}
       </Card>
 
-      {canVote && myVote && (
-        <Card>
-          <h2 className="text-sm font-semibold mb-3 text-muted uppercase tracking-wide">
-            Tulokset tähän mennessä
-          </h2>
-          <div className="space-y-4">
-            {vote.options.map((opt) => (
-              <ProgressBar
-                key={opt.id}
-                label={opt.text}
-                votes={opt.votes}
-                percent={total > 0 ? Math.round((opt.votes / total) * 100) : 0}
-                highlighted={myVote === opt.id}
-                color={opt.color}
-              />
-            ))}
-          </div>
-        </Card>
-      )}
-
       <p className="text-xs text-muted text-center">
-        {status === 'open' ? 'Sulkeutuu ' : 'Sulkeutui '}
+        {open ? 'Sulkeutuu ' : 'Sulkeutui '}
         {formatDate(vote.closesAt)} · {total} ääntä yhteensä
       </p>
     </div>
