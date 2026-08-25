@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { MOCK_VOTES } from '../mocks/votes'
-import { readJSON, writeJSON, STORAGE_KEYS } from './storage'
+import { readJSON, writeJSON, STORAGE_KEYS, DATA_VERSION } from './storage'
 import type { Vote, VoteMedia } from '../types'
 
 type MyVotes = Record<string, string> // voteId -> optionId
@@ -10,8 +10,20 @@ type MyVotes = Record<string, string> // voteId -> optionId
  * ensimmäisellä käynnistyksellä ja pitää sen jälkeen synkassa.
  */
 export function useVotes() {
-  const [votes, setVotes] = useState<Vote[]>(() => readJSON(STORAGE_KEYS.votes, MOCK_VOTES))
-  const [myVotes, setMyVotes] = useState<MyVotes>(() => readJSON(STORAGE_KEYS.myVotes, {}))
+  // Mock-datan versio tarkistetaan ennen tallennetun tilan lukemista: jos
+  // votes.ts on muuttunut, vanha localStorage-sisältö on vanhentunutta.
+  const stale = readJSON<number>(STORAGE_KEYS.dataVersion, 0) !== DATA_VERSION
+
+  const [votes, setVotes] = useState<Vote[]>(() =>
+    stale ? MOCK_VOTES : readJSON(STORAGE_KEYS.votes, MOCK_VOTES),
+  )
+  const [myVotes, setMyVotes] = useState<MyVotes>(() =>
+    stale ? {} : readJSON(STORAGE_KEYS.myVotes, {}),
+  )
+
+  useEffect(() => {
+    if (stale) writeJSON(STORAGE_KEYS.dataVersion, DATA_VERSION)
+  }, [stale])
   const [storageFull, setStorageFull] = useState(false)
 
   // Synkronointi ulkoiseen järjestelmään (localStorage). Tila päivitetään vain jos

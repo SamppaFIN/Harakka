@@ -80,7 +80,7 @@ Käytä `@theme`-nimistä generoituja utilityjä tai `bg-[var(--color-x)]`.
 │   ├── App.tsx                 # Reitit
 │   ├── index.css               # Tailwind + design-tokenit
 │   ├── types.ts                 # Vote, VoteOption, VoteMedia, getVoteStatus, totalVotes
-│   ├── mocks/votes.ts            # Mock-äänestykset (politiikka/urheilu/taide)
+│   ├── mocks/votes.ts            # Mock-äänestykset (filosofisia kysymyksiä)
 │   ├── lib/
 │   │   ├── storage.ts             # localStorage-apurit + avaimet
 │   │   ├── useVotes.ts             # Keskitetty hook: lista, äänestys, luonti
@@ -111,9 +111,13 @@ npm run lint      # oxlint
 ## 8. Data & tila
 
 - Yksi lähde: `src/mocks/votes.ts` — kopioidaan localStorageen ensimmäisellä latauksella.
-  7 mock-äänestystä: 2 politiikkaa, 2 urheilua, 3 taidetta (2 niistä värivalinnalla).
+  8 mock-äänestystä: filosofisia ja absurdeja kysymyksiä (Teseuksen laiva, vapaa tahto,
+  pillin reiät, hot dog...). Kaksi niistä on värivalinta-äänestyksiä, yksi on suljettu.
+  **Kun muutat `mocks/votes.ts`:ää, kasvata `DATA_VERSION`:ia `lib/storage.ts`:ssä** —
+  muuten vanha localStorage-data jää voimaan eikä kukaan näe muutosta.
 - localStorage-avaimet: `aanestys_votes` (äänestykset + äänimäärät), `aanestys_my_votes`
-  (`{ [voteId]: optionId }` — mihin tämä selain on äänestänyt).
+  (`{ [voteId]: optionId }` — mihin tämä selain on äänestänyt), `aanestys_data_version`
+  (mock-datan versio; eri arvo → tallennettu data korvataan lähtötilalla).
 - Äänestäminen: yksi ääni per äänestys per selain. Vaihto sallittu — vanha ääni
   vähennetään ja uusi lisätään atomisesti samassa päivityksessä.
 - Uuden äänestyksen luonti lisää tietueen listan alkuun, `createdAt` = nykyhetki.

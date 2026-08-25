@@ -3,116 +3,125 @@ import type { Vote } from '../types'
 // Mock-data demoa varten. Ei backendia — tämä on lähtötila,
 // joka kopioidaan localStorageen ensimmäisellä latauksella.
 export const MOCK_VOTES: Vote[] = [
-  // ── Politiikka ──────────────────────────────────────────────
   {
     id: 'v1',
-    title: 'Mihin kunnan budjettiylijäämä käytetään?',
-    description: `Kassassa on **1,2 miljoonaa** ylimääräistä. Valtuusto ei päässyt sopuun kolmen kokouksen jälkeen, joten kysytään suoraan asukkailta.
+    title: 'Kuinka monta reikää on pillissä?',
+    description: `Kysymys on jakanut työpaikan kahtia. Kahvihuoneessa ei enää puhuta muusta.
 
-## Reunaehdot
-- Raha on käytettävä *tämän* vuoden aikana
-- Ei saa sitoa pysyviä käyttömenoja
-- Yksi kohde, ei pilkkomista
+## Ennen kuin äänestät
+- Topologia ei ole mielipide, mutta *reikä* on määritelmäkysymys
+- "Se on ilmiselvää" ei ole perustelu
+- Kolme ihmistä on jo lähtenyt ovet paukkuen
 
-> Valtuuston puheenjohtaja: "Kunhan se ei ole taas se suihkulähde."`,
+> Yksi vastaajista: "Jos vastaus on kaksi, mikä on donitsin luku?"`,
     options: [
-      { id: 'v1-a', text: 'Uimahallin remontti', votes: 412 },
-      { id: 'v1-b', text: 'Pyöräteiden talvikunnossapito', votes: 388 },
-      { id: 'v1-c', text: 'Kirjaston aukioloajat takaisin', votes: 356 },
-      { id: 'v1-d', text: 'Torille suihkulähde, jossa on patsas kunnanjohtajasta', votes: 67 },
+      { id: 'v1-a', text: 'Yksi — se on yksi putki', votes: 1847 },
+      { id: 'v1-b', text: 'Kaksi — molemmissa päissä on reikä', votes: 1622 },
+      { id: 'v1-c', text: 'Nolla — se on taivutettu taso', votes: 431 },
+      { id: 'v1-d', text: 'En halua enää puhua tästä', votes: 908 },
     ],
-    closesAt: '2026-09-12T18:00:00.000Z',
-    createdAt: '2026-08-21T09:00:00.000Z',
+    closesAt: '2026-09-14T18:00:00.000Z',
+    createdAt: '2026-08-22T09:00:00.000Z',
   },
   {
     id: 'v2',
-    title: 'Pitäisikö valtuuston kokoukset striimata suorana?',
+    title: 'Teseuksen laiva: onko se yhä sama laiva?',
     description:
-      'Avoimuus lisääntyisi. Toisaalta jotkut pelkäävät, että kolmituntinen keskustelu pysäköintinormista ei kerää yleisöä.',
+      'Laivan jokainen lankku on vaihdettu uuteen. Vieressä on toinen laiva, joka on rakennettu kokonaan vanhoista lankuista. Satamamestari haluaa tietää, kumpaan kirjoitetaan sama nimi, koska lomake ei salli kahta.',
     options: [
-      { id: 'v2-a', text: 'Kyllä, kaikki suorana', votes: 524 },
-      { id: 'v2-b', text: 'Kyllä, mutta vain tallenteena jälkikäteen', votes: 311 },
-      { id: 'v2-c', text: 'Ei — pöytäkirja riittää', votes: 143 },
-      { id: 'v2-d', text: 'Kyllä, ja kommenttiraita mukaan', votes: 279 },
+      { id: 'v2-a', text: 'Sama laiva — jatkuvuus ratkaisee', votes: 934 },
+      { id: 'v2-b', text: 'Eri laiva — materiaali ratkaisee', votes: 712 },
+      { id: 'v2-c', text: 'Molemmat ovat se laiva', votes: 588 },
+      { id: 'v2-d', text: 'Kumpikaan ei ole, ja se on ihan ok', votes: 401 },
+      { id: 'v2-e', text: 'Laiva on siellä missä nimikin', votes: 276 },
     ],
-    closesAt: '2026-09-05T12:00:00.000Z',
-    createdAt: '2026-08-19T10:00:00.000Z',
+    closesAt: '2026-09-25T20:00:00.000Z',
+    createdAt: '2026-08-20T11:00:00.000Z',
   },
-
-  // ── Urheilu ─────────────────────────────────────────────────
   {
     id: 'v3',
-    title: 'Mikä on Suomen todellinen kansallislaji?',
+    title: 'Mikä väri on tiistai?',
     description:
-      'Ikuinen kiista ratkaistaan nyt lopullisesti. Tulos ei sido ketään mihinkään, mutta siitä voi huutaa saunassa.',
+      'Ei ole väärää vastausta. On kuitenkin vastauksia, jotka saavat muut katsomaan sinua eri tavalla. Äänestä värillä.',
     options: [
-      { id: 'v3-a', text: 'Pesäpallo', votes: 634 },
-      { id: 'v3-b', text: 'Jääkiekko', votes: 821 },
-      { id: 'v3-c', text: 'Hiihto', votes: 402 },
-      { id: 'v3-d', text: 'Saunominen kilpailumielessä', votes: 588 },
-      { id: 'v3-e', text: 'Naapurin auton katsominen ikkunasta', votes: 297 },
+      { id: 'v3-a', text: 'Vaalean harmaansininen', votes: 612, color: '#8fa9c4' },
+      { id: 'v3-b', text: 'Sinapinkeltainen', votes: 488, color: '#d3a03c' },
+      { id: 'v3-c', text: 'Väsynyt beige', votes: 731, color: '#c9bda6' },
+      { id: 'v3-d', text: 'Kirkas turkoosi', votes: 355, color: '#3fb3ad' },
+      { id: 'v3-e', text: 'Tumman punainen', votes: 289, color: '#8e3a3a' },
+      { id: 'v3-f', text: 'Tiistailla ei ole väriä', votes: 566, color: '#4a4a52' },
     ],
-    closesAt: '2026-09-28T20:00:00.000Z',
-    createdAt: '2026-08-22T11:00:00.000Z',
-  },
-  {
-    id: 'v4',
-    title: 'Uusi laji olympialaisiin 2032 — mikä ansaitsee paikan?',
-    description: 'Kansainvälinen olympiakomitea ei kysynyt, mutta me kysymme.',
-    options: [
-      { id: 'v4-a', text: 'Eukonkanto', votes: 445 },
-      { id: 'v4-b', text: 'Saappaanheitto', votes: 298 },
-      { id: 'v4-c', text: 'Ilmakitaransoitto', votes: 512 },
-      { id: 'v4-d', text: 'Suopotkupallo', votes: 367 },
-      { id: 'v4-e', text: 'Kännykänheitto', votes: 389 },
-    ],
-    closesAt: '2026-08-30T18:00:00.000Z',
-    createdAt: '2026-08-16T08:00:00.000Z',
-  },
-
-  // ── Taide ───────────────────────────────────────────────────
-  {
-    id: 'v5',
-    title: 'Minkä värinen uusi kulttuuritalo on?',
-    description:
-      'Arkkitehti antoi meille kuusi vaihtoehtoa ja sanoi "kaikki ovat hyviä". Kiitos, arkkitehti. Äänestä värillä.',
-    options: [
-      { id: 'v5-a', text: 'Terrakotta', votes: 318, color: '#c9683f' },
-      { id: 'v5-b', text: 'Metsänvihreä', votes: 402, color: '#2f6b4f' },
-      { id: 'v5-c', text: 'Yösininen', votes: 356, color: '#2b3f6b' },
-      { id: 'v5-d', text: 'Okrankeltainen', votes: 189, color: '#d3a03c' },
-      { id: 'v5-e', text: 'Luonnonvalkoinen', votes: 274, color: '#efe8dc' },
-      { id: 'v5-f', text: 'Musta (arkkitehdin oma suosikki)', votes: 141, color: '#232323' },
-    ],
-    closesAt: '2026-09-18T16:00:00.000Z',
+    closesAt: '2026-09-19T16:00:00.000Z',
     createdAt: '2026-08-23T14:00:00.000Z',
   },
   {
-    id: 'v6',
-    title: 'Mikä teos ripustetaan kirjaston aulaan?',
+    id: 'v4',
+    title: 'Onko vapaa tahto olemassa?',
     description:
-      'Lahjoituksena saatiin neljä teosta. Aulassa on tilaa yhdelle. Loput menevät varastoon odottamaan parempia aikoja.',
+      'Huomaathan, että et välttämättä valitse vastaustasi. Tulokset olivat joka tapauksessa väistämättömiä.',
     options: [
-      { id: 'v6-a', text: 'Abstrakti öljyvärityö "Hiljaisuus nro 7"', votes: 156 },
-      { id: 'v6-b', text: 'Valokuvasarja paikallisesta linja-autoasemasta', votes: 243 },
-      { id: 'v6-c', text: 'Kolmimetrinen kudottu hirvi', votes: 421 },
-      { id: 'v6-d', text: 'Neonteksti, jossa lukee "LUE"', votes: 198 },
+      { id: 'v4-a', text: 'Kyllä, ja valitsin tämän itse', votes: 1204 },
+      { id: 'v4-b', text: 'Ei, ja tämäkin oli ennalta määrätty', votes: 987 },
+      { id: 'v4-c', text: 'Kyllä ja ei — kompatibilismi', votes: 843 },
+      { id: 'v4-d', text: 'Yritin valita jotain muuta, mutta en pystynyt', votes: 662 },
     ],
-    closesAt: '2026-09-08T17:00:00.000Z',
-    createdAt: '2026-08-20T13:00:00.000Z',
+    closesAt: '2026-09-30T12:00:00.000Z',
+    createdAt: '2026-08-21T10:00:00.000Z',
+  },
+  {
+    id: 'v5',
+    title: 'Jos puu kaatuu metsässä eikä kukaan ole kuulemassa, syntyykö ääntä?',
+    description:
+      'Metsänhoitoyhdistys pyysi meitä lopettamaan tämän äänestyksen, koska heille on soitettu jo neljä kertaa. Jatkamme silti.',
+    options: [
+      { id: 'v5-a', text: 'Kyllä — paineaallot eivät tarvitse yleisöä', votes: 1533 },
+      { id: 'v5-b', text: 'Ei — ääni on kokemus, ei ilmiö', votes: 704 },
+      { id: 'v5-c', text: 'Syntyy, mutta se ei ole yhtä hyvä', votes: 892 },
+      { id: 'v5-d', text: 'Orava kuuli. Orava kuulee aina.', votes: 1119 },
+    ],
+    closesAt: '2026-09-07T18:00:00.000Z',
+    createdAt: '2026-08-24T08:00:00.000Z',
+  },
+  {
+    id: 'v6',
+    title: 'Eläisitkö ikuisesti, jos saisit valita?',
+    description:
+      'Oletetaan hyvä terveys ja kohtuullinen taloudellinen tilanne. Kaikki muut vanhenevat normaalisti. Kyllä, joudut opettelemaan uudet käyttöjärjestelmät joka kerta.',
+    options: [
+      { id: 'v6-a', text: 'Kyllä, ehdottomasti', votes: 623 },
+      { id: 'v6-b', text: 'Kyllä, mutta haluan peruutusnapin', votes: 1408 },
+      { id: 'v6-c', text: 'En — loppu antaa asioille merkityksen', votes: 1015 },
+      { id: 'v6-d', text: 'Muutaman vuosisadan, sitten katsotaan', votes: 877 },
+    ],
+    closesAt: '2026-10-02T20:00:00.000Z',
+    createdAt: '2026-08-19T13:00:00.000Z',
   },
   {
     id: 'v7',
-    title: 'Kaupungin uuden logon värimaailma',
+    title: 'Onko hot dog voileipä?',
     description:
-      'Edellinen logo oli käytössä 34 vuotta. Tämä äänestys on jo sulkeutunut — tulokset alla.',
+      'Kysymys esitettiin alun perin vitsinä. Sen jälkeen on käyty kolme väittelyä, yksi ystävyys on päättynyt, ja eräs osallistuja on kirjoittanut aiheesta 14-sivuisen muistion.',
     options: [
-      { id: 'v7-a', text: 'Lämmin punaruskea', votes: 289, color: '#a8503c' },
-      { id: 'v7-b', text: 'Järvensininen', votes: 447, color: '#3d7ea6' },
-      { id: 'v7-c', text: 'Sammaleenvihreä', votes: 331, color: '#4f7a43' },
-      { id: 'v7-d', text: 'Harmaa (turvallinen valinta)', votes: 122, color: '#8a8a86' },
+      { id: 'v7-a', text: 'On — kaksi leipäpalaa, täyte välissä', votes: 1102 },
+      { id: 'v7-b', text: 'Ei — sämpylä on yhtenäinen', votes: 1456 },
+      { id: 'v7-c', text: 'Se on oma kategoriansa', votes: 1287 },
+      { id: 'v7-d', text: 'Kaikki on voileipä, jos olet tarpeeksi rohkea', votes: 743 },
     ],
-    closesAt: '2026-08-10T12:00:00.000Z',
-    createdAt: '2026-07-25T09:00:00.000Z',
+    closesAt: '2026-09-11T15:00:00.000Z',
+    createdAt: '2026-08-18T09:00:00.000Z',
+  },
+  {
+    id: 'v8',
+    title: 'Minkä värinen on tyhjyys?',
+    description:
+      'Äänestys on sulkeutunut. Tulokset eivät valitettavasti ratkaisseet asiaa, mutta ne ovat alla.',
+    options: [
+      { id: 'v8-a', text: 'Musta', votes: 1341, color: '#0f0f14' },
+      { id: 'v8-b', text: 'Valkoinen', votes: 806, color: '#f2f0ea' },
+      { id: 'v8-c', text: 'Läpinäkyvä (ei siis mitään)', votes: 1198, color: '#6b6b78' },
+      { id: 'v8-d', text: 'Syvä violetti', votes: 542, color: '#3b2a55' },
+    ],
+    closesAt: '2026-08-12T12:00:00.000Z',
+    createdAt: '2026-07-26T09:00:00.000Z',
   },
 ]
