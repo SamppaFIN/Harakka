@@ -1,4 +1,5 @@
 import { totalVotes, type Vote } from '../types'
+import { tapFeedback } from '../lib/haptics'
 
 /**
  * Äänestysvaihtoehdot. Kun `showResults` on tosi, jokainen vaihtoehto toimii
@@ -33,8 +34,11 @@ export function VoteOptions({
             role="radio"
             aria-checked={selected}
             disabled={closed}
-            onClick={() => onVote?.(opt.id)}
-            className={`relative w-full min-h-11 overflow-hidden text-left px-3.5 py-2.5
+            onClick={() => {
+              tapFeedback()
+              onVote?.(opt.id)
+            }}
+            className={`tappable relative w-full min-h-11 overflow-hidden text-left px-3.5 py-2.5
               rounded-control border transition-all duration-200 disabled:cursor-default
               ${
                 selected

@@ -227,3 +227,22 @@ body::after {
     transform: none !important;
   }
 }
+
+/* Kosketuspalaute. Hiirellä hover hoitaa vasteen, mutta kosketuksella ei ole
+   hoveria lainkaan — painallusskaalaus on ainoa visuaalinen kuittaus siitä,
+   etta napautus rekisteroityi. */
+.tappable {
+  touch-action: manipulation; /* ei 300ms viivetta eika tuplanapautuszoomia */
+  -webkit-tap-highlight-color: transparent; /* oma palaute korvaa natiivin sinisen */
+}
+
+.tappable:active:not(:disabled) {
+  scale: 0.975;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tappable:active:not(:disabled) {
+    scale: 1;
+    filter: brightness(1.25);
+  }
+}

@@ -85,6 +85,7 @@ Käytä `@theme`-nimistä generoituja utilityjä tai `bg-[var(--color-x)]`.
 │   │   ├── storage.ts             # localStorage-apurit + avaimet
 │   │   ├── useVotes.ts             # Keskitetty hook: lista, äänestys, luonti
 │   │   ├── markdown.ts             # Oma mini-Markdown → HTML (escape ensin!)
+│   │   ├── haptics.ts              # Haptinen napautus (vain Android)
 │   │   └── image.ts                # Kuvan pienennys ennen localStoragea
 │   ├── components/
 │   │   ├── ui/                     # Button, Card, MagneticCard, FormField, Badge,
@@ -146,6 +147,13 @@ npm run lint      # oxlint
   hehkun. Efekti on rajattu `(pointer: fine)`-laitteisiin ja kytkeytyy pois
   `prefers-reduced-motion`-tilassa; kosketuslaitteilla kortti ei liiku lainkaan.
 - Hover-nostot noudattavat AI-Koulun ohjetta: pieni `translateY` + pehmeä varjo, ~0.2s.
+- **Kosketuspalaute (`.tappable`, index.css)** — kosketuslaitteilla ei ole hoveria, joten
+  painallusskaalaus (`scale: 0.975`) on ainoa kuittaus napautuksesta. Mukana
+  `touch-action: manipulation` (ei 300ms viivettä) ja läpinäkyvä tap-highlight.
+  `prefers-reduced-motion`-tilassa skaalaus korvautuu kirkastuksella.
+- **Haptiikka (`lib/haptics.ts`)** — `tapFeedback()` napautuksen yhteydessä.
+  **Toimii vain Androidilla**; iOS Safari ei tue Vibration APIa eikä siihen ole
+  verkkokorviketta, joten iPhonella jää pelkkä painallusskaalaus.
 
 ### Tunnettu rajoitus
 `useVotes` instantioidaan erikseen jokaisessa sivukomponentissa; jaettu totuus on

@@ -17,7 +17,7 @@ const variantClasses: Record<Variant, string> = {
 export function Button({ variant = 'primary', className = '', ...props }: ButtonProps) {
   return (
     <button
-      className={`min-h-11 min-w-11 px-4 rounded-control font-medium text-sm transition-colors
+      className={`tappable min-h-11 min-w-11 px-4 rounded-control font-medium text-sm transition-all
         disabled:opacity-50 disabled:cursor-not-allowed ${variantClasses[variant]} ${className}`}
       {...props}
     />
