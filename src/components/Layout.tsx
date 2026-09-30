@@ -28,7 +28,7 @@ export function Layout() {
       </main>
 
       <footer className="text-center text-xs text-muted py-6">
-        Mock-demo — data tallentuu vain tähän selaimeen.
+        Yksi ääni per selain — voit vaihtaa valintaasi niin kauan kuin äänestys on auki.
       </footer>
     </div>
   )

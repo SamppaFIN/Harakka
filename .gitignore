@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+.dev.vars
+.wrangler
+ADMIN_SECRET.local.txt

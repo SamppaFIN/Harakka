@@ -24,8 +24,9 @@
 ```json
 {
   "projekti": "Äänestys (Harakka)",
-  "versio": "0.1.0-MVP",
-  "kuvaus": "Mobiili-ensin äänestyssovellus, pelkkä frontend, mock-data + localStorage, julkaistu GitHub Pagesiin",
+  "versio": "0.2.0-tuotanto",
+  "kuvaus": "Mobiili-ensin äänestyssovellus: React-sivu + Cloudflare Worker + R2 (kuten BandRock), klikkaa-muokataksesi-editori",
+  "osoite": "https://harakka.es3-world-worker.workers.dev",
   "tila": "toteutus",
   "github": "https://github.com/SamppaFIN/Harakka.git"
 }
@@ -33,10 +34,10 @@
 
 ## 3. Tarkoitus
 
-Mock-demo äänestyssovelluksesta ilman backendia. Käyttäjä näkee avoimet äänestykset,
-äänestää yhden vaihtoehdon (voi vaihtaa mielensä), näkee tulokset palkkeina, ja voi
-luoda uusia äänestyksiä. Kaikki data elää selaimen localStoragessa — ei palvelinta,
-ei tietokantaa, ei autentikointia.
+Äänestyssovellus ilman kirjautumista. Käyttäjä näkee avoimet äänestykset, äänestää yhden
+vaihtoehdon (voi vaihtaa mielensä), näkee yhteiset tulokset ja voi luoda uusia äänestyksiä.
+Äänestykset ja vastaukset hallitaan Workerissa + R2:ssa kuten BandRockissa: luoja saa
+5-merkkisen muokkauskoodin (näytetään kerran, tiiviste R2:ssa), ylläpito `/admin` (ADMIN_SECRET).
 
 ## 4. Stack
 
@@ -44,8 +45,8 @@ ei tietokantaa, ei autentikointia.
 React 19 + TypeScript
 Vite 8 (build), @vitejs/plugin-react
 Tailwind CSS 4 (@tailwindcss/vite, CSS-first @theme-konfiguraatio index.css:ssä)
-react-router-dom 7 — HashRouter (toimii GitHub Pagesissa ilman palvelinkonfigurointia)
-gh-pages (devDependency, deploy-työkalu — varsinainen julkaisu GitHub Actionsilla)
+react-router-dom 7 — HashRouter (ei palvelinpuolen reititystä tarvita)
+Cloudflare Worker (worker/src) + R2 + Workers Assets (dist/), wrangler 4.136.1 lukittuna
 Ei ulkoisia UI-kirjastoja — kaikki komponentit käsin kirjoitettu Tailwindilla
 ```
 
@@ -73,23 +74,28 @@ Käytä `@theme`-nimistä generoituja utilityjä tai `bg-[var(--color-x)]`.
 Äänestys/
 ├── claude_newproject.md      # Alkuperäinen inframalli-template (viite)
 ├── CLAUDE.md                 # Tämä tiedosto
+├── wrangler.toml             # Worker: assets dist/, R2 harakka-data, rate limiter
+├── worker/src/               # index.js (API+admin), schema.js, code.js, image.js
+├── test/ scripts/smoke.mjs   # yksikkötestit + API-savutesti
 ├── .github/workflows/
-│   └── deploy.yml            # Build + julkaisu Pages-artifaktina
+│   └── deploy.yml            # testit + build + wrangler deploy (main)
 ├── src/
 │   ├── main.tsx               # Entry, HashRouter
 │   ├── App.tsx                 # Reitit
 │   ├── index.css               # Tailwind + design-tokenit
 │   ├── types.ts                 # Vote, VoteOption, VoteMedia, getVoteStatus, totalVotes
-│   ├── mocks/votes.ts            # Mock-äänestykset (filosofisia kysymyksiä)
 │   ├── lib/
+│   │   ├── api.ts                 # fetch-kääre, voterId, muokkauskoodit selaimessa
+│   │   ├── useVotes.ts             # useVoteList / useVote (optimistinen äänestys)
+│   │   ├── draft.ts                # Luonnos, tarkistus, VoteInput
 │   │   ├── storage.ts             # localStorage-apurit + avaimet
-│   │   ├── useVotes.ts             # Keskitetty hook: lista, äänestys, luonti
 │   │   ├── markdown.ts             # Oma mini-Markdown → HTML (escape ensin!)
 │   │   ├── haptics.ts              # Haptinen napautus (vain Android)
 │   │   └── image.ts                # Kuvan pienennys ennen localStoragea
 │   ├── components/
 │   │   ├── ui/                     # Button, Card, MagneticCard, FormField, Badge,
-│   │   │                           # MarkdownEditor, DrawingCanvas
+│   │   │                           # MarkdownEditor, DrawingCanvas, OptionsEditor,
+│   │   │                           # MediaEditor, EditRegion (klikkaa-muokataksesi), CodeDialog
 │   │   ├── VoteOptions.tsx          # Jaettu: vaihtoehdot + tulokset samassa
 │   │   └── Layout.tsx               # Header + container
 │   └── pages/
@@ -97,32 +103,34 @@ Käytä `@theme`-nimistä generoituja utilityjä tai `bg-[var(--color-x)]`.
 │       ├── VoteDetailPage.tsx        # Näkymä 2: äänestys + tulokset
 │       ├── VoteCreatePage.tsx        # Näkymä 3: uuden luonti
 │       └── NotFoundPage.tsx
-└── vite.config.ts             # base: '/Harakka/'
+└── vite.config.ts             # base: '/', dev-proxy /api → 127.0.0.1:8787
 ```
 
 ## 7. Komennot
 
 ```bash
-npm install       # riippuvuudet
-npm run dev       # kehityspalvelin
-npm run build     # tsc -b && vite build → dist/
-npm run preview   # esikatselu buildatusta versiosta
-npm run lint      # oxlint
+npm install
+npm run dev        # Vite (proxy /api → 8787)
+npm run dev:api    # Worker + paikallinen R2 (vaatii .dev.vars; Windows: -- --persist-to C:/hk-state)
+npm run build      # tsc -b && vite build → dist/
+npm test           # node --test (worker/schema/code)
+npm run lint       # oxlint
+npm run deploy     # build + wrangler deploy (tuotanto)
+node scripts/smoke.mjs <base-url>   # koko API-kierto, myös tuotantoa vasten (luo ja poistaa oman testin)
 ```
 
 ## 8. Data & tila
 
-- Yksi lähde: `src/mocks/votes.ts` — kopioidaan localStorageen ensimmäisellä latauksella.
-  8 mock-äänestystä: filosofisia ja absurdeja kysymyksiä (Teseuksen laiva, vapaa tahto,
-  pillin reiät, hot dog...). Kaksi niistä on värivalinta-äänestyksiä, yksi on suljettu.
-  **Kun muutat `mocks/votes.ts`:ää, kasvata `DATA_VERSION`:ia `lib/storage.ts`:ssä** —
-  muuten vanha localStorage-data jää voimaan eikä kukaan näe muutosta.
-- localStorage-avaimet: `aanestys_votes` (äänestykset + äänimäärät), `aanestys_my_votes`
-  (`{ [voteId]: optionId }` — mihin tämä selain on äänestänyt), `aanestys_data_version`
-  (mock-datan versio; eri arvo → tallennettu data korvataan lähtötilalla).
-- Äänestäminen: yksi ääni per äänestys per selain. Vaihto sallittu — vanha ääni
-  vähennetään ja uusi lisätään atomisesti samassa päivityksessä.
-- Uuden äänestyksen luonti lisää tietueen listan alkuun, `createdAt` = nykyhetki.
+- Totuus on R2:ssa: `votes/<id>.json` (sisältää `codeHash`, `ballots` = äänestäjätiiviste → optionId,
+  `status`, `reports`), kuvat `img/<id>/<aikaleima>.<pääte>`. `publicView()` poistaa aina `codeHash`/`ballots`.
+- **Kirjoitukset etag-ehdolla** (`mutate()`): luku → muutos → `put` `onlyIf etagMatches` → uudelleenyritys
+  satunnaisella viiveellä. Testattu: 12 rinnakkaista ääntä → kaikki lasketaan (smoke.mjs).
+- Äänestäjä = selaimen satunnainen tunniste (`aanestys_voter`), palvelin tallentaa vain `HMAC(voter:<pollId>:<id>)`.
+  Yksi ääni per äänestys; vaihto siirtää äänen atomisesti. `myVote` päätellään `x-voter`-otsikosta.
+- Vaihtoehdoilla on pysyvä `id` (`o<rand>`): muokkaus yhdistää id:llä, joten tekstin/värin muutos säilyttää äänet;
+  poistettu vaihtoehto poistaa äänensä. **Älä koskaan sido id:tä otsikkoon** — pitkä otsikko ylitti kerran id-rajan ja äänet nollautuivat.
+- localStorage: `aanestys_voter`, `aanestys_codes` (`{voteId: koodi}` — tämä selain muokkaa luomiaan ilman koodin syöttöä).
+- Sulkeutumisaika: luonnissa pakko tulevaisuuteen, muokkauksessa sallitaan mennyt (sulkee äänestyksen).
 
 ### Ominaisuudet luontilomakkeessa
 - **Markdown-kuvaus** — oma editori (`MarkdownEditor`) toolbarilla ja Kirjoita/Esikatselu-
@@ -135,8 +143,11 @@ npm run lint      # oxlint
   uudelleen joka muutoksella → undo on triviaali.
 - **Värivalinta** — checkbox "Äänestä värillä" antaa jokaiselle vaihtoehdolle `<input type="color">`.
   Väri näkyy valintanapissa näytteenä ja tulospalkin värinä.
-- `useVotes` palauttaa `storageFull`-lipun jos localStorage-kiintiö täyttyy (kuvat!) —
-  luontisivu näyttää siitä varoituksen.
+- Kuvat lähetetään data-URL:na; Worker tunnistaa tyypin alkutavuista ja tallentaa R2:een (`/img/…`).
+- **Klikkaa-muokataksesi (`EditRegion`, VoteDetailPage)**: muokkaustila piirtää saman näkymän kuin lukutila
+  (esikatselu luonnoksesta, `previewOf`). Kohta = `EditRegion`: hover/fokus → katkoviiva + "✎ Muokkaa"
+  (kosketuksella aina näkyvissä), klikkaus avaa vain sen editorin paikallaan, Valmis/Esc sulkee.
+  Yksi Tallenna → PATCH; väärä koodi avaa koodikyselyn luonnos säilyttäen. Sama `OptionsEditor`/`MediaEditor` kuin luontisivulla.
 
 ### Vuorovaikutus (AI-Koulu UI/UX -käytännöt)
 - **Valinnat ovat suoraan listakortilla** — äänestäminen ei vaadi navigointia.
@@ -155,39 +166,38 @@ npm run lint      # oxlint
   **Toimii vain Androidilla**; iOS Safari ei tue Vibration APIa eikä siihen ole
   verkkokorviketta, joten iPhonella jää pelkkä painallusskaalaus.
 
-### Tunnettu rajoitus
-`useVotes` instantioidaan erikseen jokaisessa sivukomponentissa; jaettu totuus on
-localStorage ja sivut lukevat sen uudelleen mountissa. Toimii koska navigointi
-remounttaa sivut. Jos joskus tarvitaan kahta yhtäaikaista näkymää samasta datasta,
-tämä pitää nostaa Contextiin.
+### Tunnetut rajoitukset
+- R2-kirjoitus on sarjallinen per äänestys (etag-uudelleenyritys); kova kuorma yhteen äänestykseen vaatisi Durable Objectin.
+- Yksi ääni per selain: toinen selain/yksityinen tila = uusi äänestäjä. Ei kirjautumista, ei Turnstilea (BandRockissa sama avoin tiketti).
+- Muokkauskoodia ei voi palauttaa — hukattu koodi = ylläpito (`/admin`) poistaa/piilottaa.
+- Lista lukee kaikki äänestykset R2:sta (kuten BandRock); pieni määrä ok, myöhemmin indeksi/cache.
 
 ## 9. Konventiot
 
 - Kaikki UI-teksti suomeksi.
 - Mobile-first: testaa aina 360px leveydellä, kosketuskohteet ≥ 44px, ei vaakascrollia.
-- Reititys: `HashRouter` (ei `basename`-säätöä, toimii suoraan GitHub Pagesissa).
+- Reititys: `HashRouter` (ei `basename`-säätöä eikä palvelinpuolen reititystä).
 - Ei uusia UI-kirjastoja — jos tarvitset komponentin, kirjoita se `components/ui/`-kansioon.
 - Response Protocol -otsikko jokaisessa Aavistuksen vastauksessa (ks. juuren `C:\Projects\CLAUDE.md`).
 
 ## 10. Mitä ei saa tehdä
 
-- Ei backendia, ei tietokantaa, ei autentikointia — pysytään mock+localStorage-mallissa.
+- Ei kirjautumista eikä käyttäjätilejä — koodi + ylläpitosalasana riittää.
 - Ei uusia riippuvuuksia UI:lle (esim. MUI, Chakra, Bootstrap) ilman erikseen kysymistä.
-- Ei ylisuunnittelua — 3 näkymää riittää MVP:lle, ei lisätä ominaisuuksia joita ei ole pyydetty.
+- Ei ylisuunnittelua — ei lisätä ominaisuuksia joita ei ole pyydetty.
 - Ei poisteta `claude_newproject.md`-templatea — se on historiallinen viite.
+- Salaisuuksia (CODE_SECRET, ADMIN_SECRET, tokenit) ei koskaan tiedostoihin eikä keskusteluun. Vain `wrangler secret` / GitHub secrets. `.dev.vars` ja `ADMIN_SECRET.local.txt` ovat gitignoressa.
+- Käyttäjän teksti ei koskaan `innerHTML`:llä ellei mini-Markdown (`lib/markdown.ts`, escape ensin) — palvelin validoi aina.
 
 ## 11. Julkaisu
 
-GitHub Actions (`.github/workflows/deploy.yml`) buildaa ja julkaisee Pages-artifaktina
-jokaisella pushilla `main`-haaraan. **GitHub-asetus: Settings → Pages → Source = "GitHub Actions"**
-(ei "Deploy from a branch" — gh-pages-haaraa ei käytetä).
+Tuotanto: Cloudflare Worker `harakka` (R2-ämpäri `harakka-data`, salaisuudet CODE_SECRET + ADMIN_SECRET Cloudflaressa).
+`npm run deploy` käsin, tai push `main` → GitHub Actions (`deploy.yml`: testit → build → `wrangler deploy`;
+vaatii GitHub-salaisuudet CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID). CODE_SECRETin vaihto mitätöi kaikki muokkauskoodit.
 
-`vite.config.ts`:n `base` on `/Harakka/` — jos repon nimi muuttuu, tämä pitää päivittää
-vastaavasti, muuten CSS/JS ei lataudu.
-
-Varakeino ilman Actionsia: `npm run deploy` (gh-pages-paketti pushaa `dist/`:n gh-pages-haaraan).
-Silloin Pages-lähteeksi valitaan "Deploy from a branch" → `gh-pages` / `(root)`.
+**Opit:** Windowsissa pitkä projektipolku rikkoo wranglerin paikallisen R2:n (SQLite-polku > 260 merkkiä, kaikki
+binding-kutsut → "internal error"); käytä `--persist-to C:/hk-state`. GitHub Pages ei enää käytössä.
 
 ---
-*Päivitetty: 2026-08-25*
+*Päivitetty: 2026-09-30*
 ⚡

@@ -1,15 +1,9 @@
-// localStorage-avaimet dokumentoituna yhdessä paikassa.
+// localStorage-avaimet dokumentoituna yhdessä paikassa. Data elää palvelimella —
+// selaimeen jää vain äänestäjän nimetön tunniste ja luomiesi äänestysten muokkauskoodit.
 export const STORAGE_KEYS = {
-  votes: 'aanestys_votes',
-  myVotes: 'aanestys_my_votes', // { [voteId]: optionId }
-  dataVersion: 'aanestys_data_version',
+  voter: 'aanestys_voter', // satunnainen tunniste, josta palvelin tallentaa vain äänestyskohtaisen tiivisteen
+  codes: 'aanestys_codes', // { [voteId]: muokkauskoodi } — vain tässä selaimessa luoduille
 } as const
-
-/**
- * Kasvata tätä aina kun mocks/votes.ts muuttuu. Vanha tallennettu data
- * korvataan uudella lähtötilalla, muutoin demo näyttää vanhat äänestykset.
- */
-export const DATA_VERSION = 2
 
 export function readJSON<T>(key: string, fallback: T): T {
   try {

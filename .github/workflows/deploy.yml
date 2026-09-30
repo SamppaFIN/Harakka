@@ -1,8 +1,15 @@
-name: Deploy to GitHub Pages
+name: Deploy
+
+# Sivu → GitHub Pages (staattinen, nopea CDN). API → Cloudflare Worker + R2.
+# Pages-julkaisu vaatii: Settings → Pages → Source = "GitHub Actions".
+# Workerin automaattijulkaisu vaatii Actions-salaisuudet CLOUDFLARE_API_TOKEN (Edit Cloudflare Workers + R2)
+# ja CLOUDFLARE_ACCOUNT_ID; ilman niitä se ohitetaan (Worker julkaistaan käsin: npm run deploy).
+# Workerin omat salaisuudet (CODE_SECRET, ADMIN_SECRET) pysyvät Cloudflaressa.
 
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -11,32 +18,36 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  API_URL: https://harakka.es3-world-worker.workers.dev
 
 jobs:
-  build:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-
       - run: npm ci
+      - run: npm test
       - run: npm run build
-
-      # Vaatii: Settings → Pages → Source = "GitHub Actions"
+        env:
+          VITE_API_URL: ${{ env.API_URL }}
       - uses: actions/configure-pages@v5
-
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
       - uses: actions/upload-pages-artifact@v3
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         with:
-          path: ./dist
+          path: dist
 
-  deploy:
-    needs: build
+  pages:
+    needs: verify
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -44,3 +55,25 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  worker:
+    needs: verify
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Julkaise Worker
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::warning::Cloudflare-salaisuudet puuttuvat — Worker jätettiin julkaisematta (npm run deploy käsin)."
+            exit 0
+          fi
+          npx wrangler deploy

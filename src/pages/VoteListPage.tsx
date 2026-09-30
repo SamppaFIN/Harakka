@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
-import { useVotes } from '../lib/useVotes'
+import { useVoteList } from '../lib/useVotes'
+import { formatDate } from '../lib/draft'
 import { getVoteStatus, totalVotes } from '../types'
 import { MagneticCard } from '../components/ui/MagneticCard'
 import { StatusBadge } from '../components/ui/Badge'
@@ -7,18 +8,29 @@ import { Button } from '../components/ui/Button'
 import { VoteOptions } from '../components/VoteOptions'
 import { stripMarkdown } from '../lib/markdown'
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleString('fi-FI', {
-    day: 'numeric',
-    month: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
 export function VoteListPage() {
-  const { votes, myVoteFor, castVote } = useVotes()
+  const { votes, state, reload, castVote, voteError } = useVoteList()
+
+  if (state === 'loading') {
+    return (
+      <div className="space-y-4" aria-busy="true" aria-label="Ladataan">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="h-44 rounded-card bg-surface/60 animate-pulse" />
+        ))}
+      </div>
+    )
+  }
+
+  if (state === 'error') {
+    return (
+      <div className="text-center py-16">
+        <p className="text-danger mb-4">⚠ Äänestysten lataus epäonnistui.</p>
+        <Button variant="secondary" onClick={reload}>
+          Yritä uudelleen
+        </Button>
+      </div>
+    )
+  }
 
   if (votes.length === 0) {
     return (
@@ -42,10 +54,12 @@ export function VoteListPage() {
     <div className="space-y-4">
       <h1 className="text-xl font-semibold mb-1">Äänestykset</h1>
 
+      {voteError && <p className="text-sm text-danger">⚠ {voteError}</p>}
+
       {sorted.map((vote) => {
         const status = getVoteStatus(vote)
         const open = status === 'open'
-        const myVote = myVoteFor(vote.id)
+        const myVote = vote.myVote
 
         return (
           <MagneticCard key={vote.id}>
@@ -63,7 +77,7 @@ export function VoteListPage() {
             <div className="flex gap-3 mb-3">
               {vote.media && (
                 <img
-                  src={vote.media.dataUrl}
+                  src={vote.media.src}
                   alt=""
                   className="shrink-0 h-14 w-14 rounded-control border border-line object-cover"
                 />
@@ -76,7 +90,7 @@ export function VoteListPage() {
             <VoteOptions
               vote={vote}
               myVote={myVote}
-              onVote={open ? (optionId) => castVote(vote.id, optionId) : undefined}
+              onVote={open ? (optionId) => castVote(vote, optionId) : undefined}
             />
 
             <div className="flex items-center justify-between gap-3 mt-2 text-xs text-muted">

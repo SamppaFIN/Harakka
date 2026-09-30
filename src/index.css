@@ -246,3 +246,10 @@ body::after {
     filter: brightness(1.25);
   }
 }
+
+/* Klikkaa-muokataksesi: kosketuslaitteilla ei ole hoveria, joten "✎ Muokkaa" näkyy aina. */
+@media (hover: none) {
+  .region-edit-btn {
+    opacity: 1;
+  }
+}

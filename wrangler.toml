@@ -1,0 +1,20 @@
+# Harakan Worker: API (R2). Sivu on GitHub Pagesissa. Aja komennot projektin juuresta: `npm run deploy`
+# (kirjautuminen kerran: `npx wrangler login`). R2-ämpäri: `npx wrangler r2 bucket create harakka-data`.
+# Salaisuudet (CODE_SECRET, ADMIN_SECRET) asetetaan `wrangler secret put`illa, ei tähän.
+name = "harakka"
+main = "worker/src/index.js"
+compatibility_date = "2026-09-08"
+
+[vars]
+# Sivut, joilta selain saa kutsua Workeria (pilkulla erotettuna).
+ALLOWED_ORIGINS = "https://samppafin.github.io,http://localhost:5173"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "harakka-data"
+
+# Hidastaa koodin arvaamista ja roskapostia (ei täydellinen suoja, "eventually consistent").
+[[ratelimits]]
+name = "RATE_LIMITER"
+namespace_id = "2001"
+simple = { limit = 20, period = 60 }
