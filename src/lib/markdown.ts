@@ -21,7 +21,16 @@ function escapeHtml(s: string): string {
 /** Sallitaan vain turvalliset linkkiprotokollat. */
 function safeHref(url: string): string | null {
   const trimmed = url.trim()
-  return /^(https?:\/\/|mailto:)/i.test(trimmed) ? trimmed : null
+  if (!/^(https?:\/\/|mailto:)/i.test(trimmed)) return null
+  // Pelkkä "https://" (työkalupalkin linkkipohja täyttämättä) ei ole osoite — selain estäisi sen (about:blank#blocked).
+  if (/^https?:/i.test(trimmed)) {
+    try {
+      if (!new URL(trimmed).hostname) return null
+    } catch {
+      return null
+    }
+  }
+  return trimmed
 }
 
 function inline(text: string): string {
