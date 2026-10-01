@@ -58,6 +58,27 @@ export function MarkdownEditor({
     }
 
     const selected = value.slice(start, end)
+
+    // Linkki: maalattu osoite → [osoite](osoite). Muuten maalattu teksti on linkin teksti ja osoitepohja
+    // "https://" jää valituksi, jotta osoitteen voi kirjoittaa suoraan sen päälle.
+    if (action.title === 'Linkki') {
+      const isUrl = /^https?:\/\/\S+$/i.test(selected.trim())
+      const label = selected || 'teksti'
+      const url = isUrl ? selected.trim() : 'https://'
+      const next = value.slice(0, start) + `[${label}](${url})` + value.slice(end)
+      onChange(next)
+      queueMicrotask(() => {
+        el.focus()
+        if (isUrl) {
+          const caret = start + label.length + url.length + 4
+          el.setSelectionRange(caret, caret)
+        } else {
+          const urlStart = start + label.length + 3
+          el.setSelectionRange(urlStart, urlStart + url.length)
+        }
+      })
+      return
+    }
     const next = value.slice(0, start) + action.before + selected + action.after + value.slice(end)
     onChange(next)
     queueMicrotask(() => {
