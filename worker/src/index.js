@@ -22,7 +22,7 @@
  * jos joku ehti väliin — yhtäaikaiset äänet eivät hävitä toisiaan.
  */
 import { validateCreate, validatePatch, validateBallot } from './schema.js';
-import { generateCode, hashCode, verifyCode, verifyAdmin, voterKey, slugify } from './code.js';
+import { generateCode, hashCode, verifyCode, verifyAdmin, voterKey, slugify, isMasterEditCode } from './code.js';
 
 const MAX_BODY = 4_500_000; // kuva base64:nä + teksti
 const MAX_BALLOTS = 20000; // ~1 Mt per äänestys, pitää R2-objektin kohtuullisena
@@ -212,7 +212,9 @@ async function patchVote(request, env, id) {
 
   const out = await mutate(env, id, async (poll) => {
     // Koodi tarkistetaan ennen validointivirheiden paljastamista.
-    if (!(await verifyCode(code, poll.codeHash, env.CODE_SECRET))) return { error: json({ error: 'forbidden' }, 403) };
+    // Yleisavain (env.MASTER_EDIT_CODE) toimii vain muokkaukseen, ei poistoon.
+    const authorized = isMasterEditCode(code, env.MASTER_EDIT_CODE) || (await verifyCode(code, poll.codeHash, env.CODE_SECRET));
+    if (!authorized) return { error: json({ error: 'forbidden' }, 403) };
     if (!result.ok) return { error: json({ error: 'invalid', fields: result.errors }, 400) };
     const v = result.value;
 

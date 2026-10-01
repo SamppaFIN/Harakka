@@ -55,3 +55,12 @@ export function slugify(text) {
     .replace(/^-+|-+$/g, '')
     .slice(0, 40) || 'aanestys';
 }
+
+/**
+ * Yleisavain muokkaukseen (esim. 00000), asetetaan vars-muuttujalla MASTER_EDIT_CODE; tyhjä/puuttuva = pois käytöstä.
+ * Tarkoituksella tunnettu koodi, ei salaisuus: kuka tahansa voi muokata mitä tahansa äänestystä. Ei poista.
+ */
+export function isMasterEditCode(given, master) {
+  if (typeof given !== 'string' || typeof master !== 'string' || !master) return false;
+  return timingSafeEqual(given.trim(), master);
+}

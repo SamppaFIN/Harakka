@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { generateCode, hashCode, verifyCode, voterKey, slugify, verifyAdmin } from '../worker/src/code.js';
+import { isMasterEditCode, generateCode, hashCode, verifyCode, voterKey, slugify, verifyAdmin } from '../worker/src/code.js';
 
 test('koodi: 5 merkkiä ilman sekoitettavia', () => {
   for (let i = 0; i < 50; i++) assert.match(generateCode(), /^[ABCDEFGHJKMNPQRSTUVWXYZ2-9]{5}$/);
@@ -25,4 +25,11 @@ test('slugify ja admin', () => {
   assert.equal(slugify('Kuinka monta reikää?'), 'kuinka-monta-reikaa');
   assert.ok(verifyAdmin('x', 'x'));
   assert.ok(!verifyAdmin('x', ''));
+});
+
+test('yleisavain: toimii vain kun asetettu', () => {
+  assert.ok(isMasterEditCode('00000', '00000'));
+  assert.ok(!isMasterEditCode('00001', '00000'));
+  assert.ok(!isMasterEditCode('00000', undefined));
+  assert.ok(!isMasterEditCode('', ''));
 });

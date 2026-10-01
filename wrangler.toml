@@ -7,6 +7,8 @@ compatibility_date = "2026-09-08"
 
 [vars]
 # Sivut, joilta selain saa kutsua Workeria (pilkulla erotettuna).
+# Yleisavain kaikkien äänestysten muokkaukseen (ei poistoon). Poista rivi niin avain lakkaa toimimasta.
+MASTER_EDIT_CODE = "00000"
 ALLOWED_ORIGINS = "https://samppafin.github.io,http://localhost:5173"
 
 [[r2_buckets]]
